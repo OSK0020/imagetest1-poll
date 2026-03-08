@@ -10,8 +10,11 @@ It utilizes GitHub Actions to run automatically every day, ensuring the models a
 ⚙️ How it Works
 
 1.A GitHub Actions workflow runs daily (cron job).
+
 2.The Python script securely fetches the POLLINATIONS_API_KEY from GitHub Secrets.
+
 3.It sends a complex test prompt to multiple models.
+
 4.The generated images are saved as artifacts, and a daily log is updated automatically.
 
 🛡️ Security
