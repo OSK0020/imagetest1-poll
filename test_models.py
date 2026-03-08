@@ -2,8 +2,12 @@ import requests
 import os
 import time
 
-# --- המפתח שלך ---
-API_KEY = "sk_4syyCnDbIaq77tGp1aEBptIEr6vz4yCA"
+# --- משיכת המפתח הסודי ממשתני הסביבה (במקום לכתוב אותו כאן) ---
+API_KEY = os.getenv("POLLINATIONS_API_KEY")
+
+if not API_KEY:
+    print("❌ Error: POLLINATIONS_API_KEY environment variable is missing!")
+    exit(1)
 
 # --- רשימת המודלים לבדיקה ---
 MODELS = {
@@ -17,7 +21,7 @@ MODELS = {
 
 PROMPT = "A futuristic cyberpunk street food vendor in Tokyo, neon lights, rain, highly detailed, 8k resolution"
 
-print("🚀 Starting Manual Model Test...")
+print("🚀 Starting Automated Model Test...")
 
 for code, name in MODELS.items():
     print(f"\n📸 Testing {name} ({code})...")
@@ -39,8 +43,11 @@ for code, name in MODELS.items():
                 f.write(res.content)
             print(f"   ✅ Saved: {filename}")
         else:
-            print(f"   ❌ Failed: {res.status_code}")
+            print(f"   ❌ Failed: {res.status_code} - {res.text}")
     except Exception as e:
         print(f"   ❌ Error: {e}")
+        
+    # השהייה קלה בין בקשה לבקשה כדי לא להעמיס על השרת
+    time.sleep(2)
 
 print("\n✨ Test Finished!")
