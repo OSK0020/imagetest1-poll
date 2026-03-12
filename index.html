@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he" dir="rtl" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Models Gallery</title>
-    <!-- Tailwind CSS לעיצוב סופר מהיר ומודרני -->
+    <title>AI Models Gallery</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- אייקונים -->
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* אנימציית טעינה ייעודית */
+        /* Loading Animation */
         .loader {
             border: 4px solid rgba(255, 255, 255, 0.1);
             border-left-color: #3b82f6;
@@ -23,185 +23,508 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* עיצוב פס הגלילה */
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        /* Sidebar transitions */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
         }
-        ::-webkit-scrollbar-track {
-            background: #1f2937; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4b5563; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280; 
-        }
+        
+        /* Language specific logic */
+        :lang(he) .ltr-only { display: none !important; }
+        :lang(en) .rtl-only { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col font-sans">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col font-sans overflow-x-hidden">
 
-    <!-- אזור ראשי (הגלריה) -->
+    <!-- Top Navbar -->
+    <header class="flex justify-between items-center p-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-xl">
+                <i data-lucide="aperture" class="w-6 h-6 text-white"></i>
+            </div>
+            <span class="font-bold text-xl tracking-wide hidden sm:block" data-i18n="logoTitle">מעבדת AI</span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button id="lang-btn" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm font-medium transition-colors border border-gray-700">
+                EN
+            </button>
+            <button id="menu-btn" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors border border-gray-700">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-40 transition-opacity"></div>
+
+    <!-- Sidebar / Drawer -->
+    <aside id="sidebar" class="fixed top-0 bottom-0 w-80 bg-gray-900 border-gray-800 z-50 sidebar-transition flex flex-col shadow-2xl" style="transform: translateX(100%);">
+        <!-- Sidebar Header -->
+        <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+            <h2 class="font-bold text-lg" data-i18n="profileTitle">הפרופיל שלי</h2>
+            <button id="close-sidebar" class="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="flex-grow overflow-y-auto p-4 space-y-6">
+            
+            <!-- Profile Section -->
+            <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/50">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-lg font-bold">
+                        U
+                    </div>
+                    <div>
+                        <div class="font-medium">User</div>
+                        <div class="text-xs text-gray-400" id="tier-display">Tier: Free</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Balance & Settings Section -->
+            <div class="space-y-3">
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18n="settingsTitle">הגדרות ויתרה</h3>
+                
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/50 flex justify-between items-center">
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="coins" class="w-4 h-4 text-yellow-500"></i>
+                        <span data-i18n="balanceText">תמונות שנוצרו:</span>
+                    </div>
+                    <span id="usage-count" class="font-mono font-bold text-blue-400">0</span>
+                </div>
+
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700/50 space-y-2">
+                    <label class="text-sm text-gray-300 flex items-center gap-2">
+                        <i data-lucide="key" class="w-4 h-4"></i>
+                        <span data-i18n="apiKeyLabel">מפתח API (Pollinations)</span>
+                    </label>
+                    <input type="password" id="api-key-input" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="הכנס מפתח לאיכות גבוהה...">
+                    <button id="save-key-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg transition-colors mt-2" data-i18n="saveKeyBtn">שמור מפתח</button>
+                    <p class="text-[10px] text-gray-500 mt-1" data-i18n="apiKeyDesc">המפתח נשמר מקומית בדפדפן שלך בלבד.</p>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18n="historyTitle">היסטוריה</h3>
+                    <button id="clear-history-btn" class="text-xs text-red-400 hover:text-red-300 transition-colors" data-i18n="clearHistoryBtn">נקה</button>
+                </div>
+                <div id="history-list" class="space-y-2">
+                    <!-- History items injected here -->
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
     <main class="flex-grow p-4 md:p-8 overflow-y-auto pb-32" id="main-content">
-        <div class="max-w-7xl mx-auto text-center mt-10" id="welcome-screen">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+        <div class="max-w-7xl mx-auto text-center mt-6 lg:mt-10 transition-all duration-500" id="welcome-screen">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500" data-i18n="mainTitle">
                 מעבדת המודלים של AI
             </h1>
-            <p class="text-gray-400 text-lg mb-8">
-                הזן פרומפט (תיאור) למטה, וראה כיצד מודלים שונים של בינה מלאכותית מפרשים אותו.
-                <br><span class="text-sm">(מומלץ לכתוב באנגלית לתוצאות הטובות ביותר, אך המערכת תומכת גם בעברית)</span>
+            <p class="text-gray-400 text-lg md:text-xl mb-8 max-w-2xl mx-auto" data-i18n="mainSubtitle">
+                הזן תיאור למטה, וראה בזמן אמת כיצד מודלי הבינה המלאכותית המתקדמים בעולם מפרשים אותו.
             </p>
             
-            <div class="flex justify-center gap-4 flex-wrap text-sm text-gray-500">
-                <span class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700">Flux Schnell</span>
-                <span class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700">Imagen 4</span>
-                <span class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700">FLUX.2 Dev</span>
-                <span class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700">GPT Image</span>
+            <div class="flex justify-center gap-2 flex-wrap text-xs font-medium text-gray-400 max-w-3xl mx-auto" id="model-badges">
+                <!-- Badges injected here via JS -->
             </div>
         </div>
 
-        <!-- קונטיינר לגלריית התמונות -->
-        <div id="gallery" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden mt-8">
-            <!-- התמונות יוזרקו לכאן על ידי JavaScript -->
+        <!-- Gallery Container -->
+        <div id="gallery" class="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden mt-8">
+            <!-- Images injected here -->
         </div>
     </main>
 
-    <!-- אזור הקלט (בתחתית המסך, כמו ב-ChatGPT) -->
-    <div class="fixed bottom-0 left-0 right-0 bg-gray-900 bg-opacity-95 border-t border-gray-800 p-4 backdrop-blur-sm">
+    <!-- Input Area -->
+    <div class="fixed bottom-0 left-0 right-0 bg-gray-900/90 border-t border-gray-800 p-4 backdrop-blur-md z-20">
         <div class="max-w-4xl mx-auto">
-            <form id="prompt-form" class="relative">
+            <form id="prompt-form" class="relative flex items-center">
                 <input 
                     type="text" 
                     id="prompt-input" 
-                    placeholder="תאר את התמונה שתרצה ליצור... (לדוגמה: A futuristic city in a glass globe)" 
-                    class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 pr-6 pl-16 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-lg text-lg"
+                    class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     required
                 >
                 <button 
                     type="submit" 
                     id="submit-btn"
-                    class="absolute left-3 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-xl transition-colors flex items-center justify-center"
-                    title="צור תמונות"
+                    class="absolute rtl:left-3 ltr:right-3 bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-xl transition-all flex items-center justify-center shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed"
                 >
                     <i data-lucide="sparkles" class="w-5 h-5"></i>
                 </button>
             </form>
-            <div class="text-center mt-2 text-xs text-gray-500">
-                מופעל על ידי טכנולוגיית Pollinations.ai
+            <div class="text-center mt-3 flex items-center justify-center gap-2 text-xs text-gray-500">
+                <span data-i18n="poweredBy">מופעל על ידי טכנולוגיית</span>
+                <a href="https://pollinations.ai" target="_blank" class="text-gray-400 hover:text-white transition-colors font-medium">Pollinations.ai</a>
             </div>
         </div>
     </div>
 
     <script>
-        // אתחול האייקונים של Lucide
-        lucide.createIcons();
-
-        // רשימת המודלים שברצוננו לבדוק (מבוסס על הרשימה שלך)
+        // --- 1. CONFIGURATION & MODELS ---
         const MODELS = [
             { id: 'flux', name: 'Flux Schnell' },
-            { id: 'flux-2-dev', name: 'FLUX.2 Dev (Alpha)' },
+            { id: 'flux-2-dev', name: 'FLUX.2 Dev' },
+            { id: 'dirtberry', name: 'Dirtberry' },
             { id: 'zimage', name: 'Z-Image Turbo' },
-            { id: 'imagen-4', name: 'Google Imagen 4' },
+            { id: 'imagen-4', name: 'Imagen 4' },
+            { id: 'grok-imagine', name: 'Grok Imagine' },
             { id: 'klein', name: 'FLUX.2 Klein 4B' },
-            { id: 'gptimage', name: 'GPT Image 1 Mini' }
+            { id: 'gptimage', name: 'GPT Image 1 Mini' },
+            { id: 'klein-large', name: 'FLUX.2 Klein 9B' }
         ];
 
+        // --- 2. i18n (TRANSLATIONS) ---
+        const translations = {
+            he: {
+                logoTitle: "מעבדת AI",
+                profileTitle: "הפרופיל שלי",
+                settingsTitle: "הגדרות ויתרה",
+                balanceText: "תמונות שנוצרו:",
+                apiKeyLabel: "מפתח API (Pollinations)",
+                saveKeyBtn: "שמור מפתח",
+                apiKeyDesc: "המפתח נשמר מקומית בדפדפן שלך בלבד.",
+                historyTitle: "היסטוריה",
+                clearHistoryBtn: "נקה",
+                mainTitle: "מעבדת המודלים של AI",
+                mainSubtitle: "הזן תיאור למטה, וראה בזמן אמת כיצד מודלי הבינה המלאכותית המתקדמים בעולם מפרשים אותו.",
+                promptPlaceholder: "תאר את התמונה שתרצה ליצור... (לדוגמה: עיר עתידנית מניאון)",
+                poweredBy: "מופעל על ידי טכנולוגיית",
+                generatingIn: "מייצר ב-",
+                errorLoading: "שגיאה בטעינת"
+            },
+            en: {
+                logoTitle: "AI Lab",
+                profileTitle: "My Profile",
+                settingsTitle: "Settings & Balance",
+                balanceText: "Images Generated:",
+                apiKeyLabel: "API Key (Pollinations)",
+                saveKeyBtn: "Save Key",
+                apiKeyDesc: "Your key is stored locally in your browser only.",
+                historyTitle: "History",
+                clearHistoryBtn: "Clear",
+                mainTitle: "AI Models Laboratory",
+                mainSubtitle: "Enter a description below and see in real-time how the world's leading AI models interpret it.",
+                promptPlaceholder: "Describe the image you want... (e.g., A futuristic neon city)",
+                poweredBy: "Powered by",
+                generatingIn: "Generating in ",
+                errorLoading: "Error loading "
+            }
+        };
+
+        // --- 3. STATE MANAGEMENT ---
+        let state = {
+            lang: localStorage.getItem('appLang') || 'he',
+            apiKey: localStorage.getItem('pollinationsApiKey') || '',
+            usageCount: parseInt(localStorage.getItem('pollinationsUsageCount') || '0'),
+            history: JSON.parse(localStorage.getItem('promptHistory') || '[]')
+        };
+
+        // --- 4. DOM ELEMENTS ---
+        const htmlRoot = document.getElementById('html-root');
+        const langBtn = document.getElementById('lang-btn');
+        const menuBtn = document.getElementById('menu-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveKeyBtn = document.getElementById('save-key-btn');
+        const usageCountDisplay = document.getElementById('usage-count');
+        const tierDisplay = document.getElementById('tier-display');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        
         const form = document.getElementById('prompt-form');
         const input = document.getElementById('prompt-input');
         const gallery = document.getElementById('gallery');
         const welcomeScreen = document.getElementById('welcome-screen');
         const submitBtn = document.getElementById('submit-btn');
+        const modelBadges = document.getElementById('model-badges');
 
+        // --- 5. INITIALIZATION ---
+        function init() {
+            // Render Model Badges
+            MODELS.forEach(m => {
+                const badge = document.createElement('span');
+                badge.className = "bg-gray-800/80 px-3 py-1.5 rounded-full border border-gray-700/50 backdrop-blur-sm";
+                badge.innerText = m.name;
+                modelBadges.appendChild(badge);
+            });
+
+            applyLanguage();
+            updateProfileUI();
+            renderHistory();
+            lucide.createIcons();
+        }
+
+        // --- 6. LANGUAGE LOGIC ---
+        langBtn.addEventListener('click', () => {
+            state.lang = state.lang === 'he' ? 'en' : 'he';
+            localStorage.setItem('appLang', state.lang);
+            applyLanguage();
+        });
+
+        function applyLanguage() {
+            // Set direction and text
+            htmlRoot.dir = state.lang === 'he' ? 'rtl' : 'ltr';
+            htmlRoot.lang = state.lang;
+            langBtn.innerText = state.lang === 'he' ? 'EN' : 'עב';
+            
+            // Adjust Sidebar position based on direction
+            if (state.lang === 'he') {
+                sidebar.classList.remove('left-0', 'border-r');
+                sidebar.classList.add('right-0', 'border-l');
+            } else {
+                sidebar.classList.remove('right-0', 'border-l');
+                sidebar.classList.add('left-0', 'border-r');
+            }
+            
+            // Update static texts
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[state.lang][key]) {
+                    el.innerText = translations[state.lang][key];
+                }
+            });
+            
+            // Update placeholders
+            input.placeholder = translations[state.lang].promptPlaceholder;
+        }
+
+        // --- 7. SIDEBAR LOGIC ---
+        function toggleSidebar(show) {
+            if (show) {
+                sidebarOverlay.classList.remove('hidden');
+                setTimeout(() => {
+                    sidebar.style.transform = 'translateX(0)';
+                    sidebarOverlay.style.opacity = '1';
+                }, 10);
+            } else {
+                sidebar.style.transform = state.lang === 'he' ? 'translateX(100%)' : 'translateX(-100%)';
+                sidebarOverlay.style.opacity = '0';
+                setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
+            }
+        }
+
+        menuBtn.addEventListener('click', () => toggleSidebar(true));
+        closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
+        sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+
+        // --- 8. PROFILE & SETTINGS ---
+        function updateProfileUI() {
+            apiKeyInput.value = state.apiKey;
+            usageCountDisplay.innerText = state.usageCount;
+            tierDisplay.innerText = state.apiKey ? "Tier: Pro (API Key)" : "Tier: Free";
+            if (state.apiKey) {
+                tierDisplay.classList.add('text-green-400');
+            } else {
+                tierDisplay.classList.remove('text-green-400');
+            }
+        }
+
+        saveKeyBtn.addEventListener('click', () => {
+            state.apiKey = apiKeyInput.value.trim();
+            localStorage.setItem('pollinationsApiKey', state.apiKey);
+            
+            // Visual feedback
+            const originalText = saveKeyBtn.innerText;
+            saveKeyBtn.innerText = state.lang === 'he' ? "נשמר בהצלחה!" : "Saved!";
+            saveKeyBtn.classList.replace('bg-blue-600', 'bg-green-600');
+            saveKeyBtn.classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
+            updateProfileUI();
+            
+            setTimeout(() => {
+                saveKeyBtn.innerText = originalText;
+                saveKeyBtn.classList.replace('bg-green-600', 'bg-blue-600');
+                saveKeyBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
+            }, 2000);
+        });
+
+        // --- 9. HISTORY LOGIC ---
+        function saveToHistory(promptStr) {
+            // Remove if exists to put it at the top
+            state.history = state.history.filter(h => h.prompt !== promptStr);
+            state.history.unshift({
+                prompt: promptStr,
+                date: new Date().toISOString()
+            });
+            // Keep only last 20
+            if (state.history.length > 20) state.history.pop();
+            
+            localStorage.setItem('promptHistory', JSON.stringify(state.history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (state.history.length === 0) {
+                historyList.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">${state.lang === 'he' ? 'אין היסטוריה עדיין' : 'No history yet'}</p>`;
+                return;
+            }
+
+            state.history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "group flex items-center justify-between bg-gray-900/50 p-3 rounded-lg border border-gray-800 hover:border-gray-600 cursor-pointer transition-colors";
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = "truncate text-sm text-gray-300 group-hover:text-white";
+                textDiv.innerText = item.prompt;
+                
+                div.appendChild(textDiv);
+                
+                div.addEventListener('click', () => {
+                    input.value = item.prompt;
+                    toggleSidebar(false);
+                    form.dispatchEvent(new Event('submit'));
+                });
+                
+                historyList.appendChild(div);
+            });
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            state.history = [];
+            localStorage.setItem('promptHistory', '[]');
+            renderHistory();
+        });
+
+        // --- 10. IMAGE GENERATION LOGIC ---
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const prompt = input.value.trim();
             if (!prompt) return;
 
+            saveToHistory(prompt);
             generateImages(prompt);
         });
 
-        function generateImages(prompt) {
-            // העלמת מסך הפתיחה והצגת הגלריה
+        async function fetchImageWithKey(url, apiKey) {
+            if (!apiKey) return url;
+            try {
+                // If the user has a key, we fetch the blob directly to pass the Authorization header securely
+                const res = await fetch(url, {
+                    headers: { "Authorization": `Bearer ${apiKey}` }
+                });
+                if (!res.ok) throw new Error("Network response was not ok");
+                const blob = await res.blob();
+                return URL.createObjectURL(blob);
+            } catch (error) {
+                console.error("Fetch failed, falling back to basic URL:", error);
+                return url; // fallback to free tier if error
+            }
+        }
+
+        async function generateImages(prompt) {
+            // UI State change
             welcomeScreen.classList.add('hidden');
             gallery.classList.remove('hidden');
-            gallery.innerHTML = ''; // ניקוי תמונות קודמות
-
-            // החלפת אייקון כפתור לשעון חול
+            gallery.innerHTML = ''; 
+            input.disabled = true;
+            submitBtn.disabled = true;
             submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
             lucide.createIcons();
-            submitBtn.disabled = true;
 
-            // יצירת זרע (seed) אקראי כדי שכל המודלים יקבלו את אותו הזרע להשוואה הוגנת, או זרע חדש לכל יצירה
-            const seed = Math.floor(Math.random() * 100000);
+            const seed = Math.floor(Math.random() * 1000000);
             let loadedImages = 0;
+            const encodedPrompt = encodeURIComponent(prompt);
 
-            MODELS.forEach(model => {
-                // יצירת הכרטיסייה לכל מודל
+            for (const model of MODELS) {
+                // Card UI
                 const card = document.createElement('div');
-                card.className = 'bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 shadow-xl relative group aspect-square flex flex-col items-center justify-center';
+                card.className = 'bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl relative group aspect-square flex flex-col items-center justify-center';
                 
-                // ספינר טעינה
                 const loaderContainer = document.createElement('div');
-                loaderContainer.className = 'absolute inset-0 flex flex-col items-center justify-center z-10';
+                loaderContainer.className = 'absolute inset-0 flex flex-col items-center justify-center z-10 bg-gray-800/80 backdrop-blur-sm';
                 loaderContainer.innerHTML = `
                     <div class="loader mb-4"></div>
-                    <p class="text-blue-400 font-medium">מייצר ב-${model.name}...</p>
+                    <p class="text-blue-400 font-medium text-sm px-4 text-center">${translations[state.lang].generatingIn}${model.name}</p>
                 `;
                 card.appendChild(loaderContainer);
 
-                // אלמנט התמונה
                 const img = document.createElement('img');
-                img.className = 'w-full h-full object-cover opacity-0 transition-opacity duration-500 z-20 relative';
+                img.className = 'w-full h-full object-cover opacity-0 transition-opacity duration-700 z-20 relative';
                 img.alt = `Generated by ${model.name}`;
                 
-                // הרכבת כתובת ה-URL של Pollinations
-                // אנחנו מקודדים את הפרומפט כדי שיתאים ל-URL (תומך גם בעברית)
-                const encodedPrompt = encodeURIComponent(prompt);
-                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${model.id}&width=1024&height=1024&nologo=true&seed=${seed}`;
-                
-                img.src = imageUrl;
+                // Base Pollinations URL
+                const baseUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${model.id}&width=1024&height=1024&nologo=true&seed=${seed}`;
 
-                // אירוע סיום טעינת התמונה
+                // Fetch logic (handles API Key if present)
+                fetchImageWithKey(baseUrl, state.apiKey).then(finalUrl => {
+                    img.src = finalUrl;
+                });
+
                 img.onload = () => {
-                    loaderContainer.style.display = 'none'; // הסתרת הספינר
-                    img.classList.remove('opacity-0'); // הצגת התמונה באנימציה רכה
+                    loaderContainer.style.display = 'none';
+                    img.classList.remove('opacity-0');
+                    updateUsageCount();
                     checkAllLoaded();
                 };
 
-                // אירוע שגיאה
                 img.onerror = () => {
                     loaderContainer.innerHTML = `
-                        <i data-lucide="alert-triangle" class="w-10 h-10 text-red-500 mb-2"></i>
-                        <p class="text-red-400 font-medium">שגיאה בטעינת ${model.name}</p>
+                        <i data-lucide="image-off" class="w-10 h-10 text-red-500 mb-2"></i>
+                        <p class="text-red-400 font-medium text-sm text-center px-4">${translations[state.lang].errorLoading}${model.name}</p>
                     `;
                     lucide.createIcons();
                     checkAllLoaded();
                 };
 
-                // תווית שם המודל על גבי התמונה
                 const badge = document.createElement('div');
-                badge.className = 'absolute top-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1 rounded-lg text-sm font-medium z-30 backdrop-blur-md border border-gray-600';
+                badge.className = 'absolute top-3 right-3 bg-black/70 text-white px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide z-30 backdrop-blur-md border border-gray-600/50 shadow-lg';
                 badge.innerText = model.name;
+
+                // Download button (appears on hover)
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'absolute bottom-3 right-3 bg-blue-600/90 hover:bg-blue-500 text-white p-2 rounded-xl z-30 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md shadow-lg';
+                downloadBtn.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i>';
+                downloadBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const a = document.createElement('a');
+                    a.href = img.src;
+                    a.download = `pollinations-${model.id}-${seed}.jpg`;
+                    a.click();
+                };
 
                 card.appendChild(img);
                 card.appendChild(badge);
+                card.appendChild(downloadBtn);
                 gallery.appendChild(card);
-            });
+                lucide.createIcons();
+            }
 
-            // פונקציה לבדיקה אם כל התמונות סיימו לטעון
             function checkAllLoaded() {
                 loadedImages++;
                 if (loadedImages === MODELS.length) {
-                    // החזרת הכפתור למצב רגיל
+                    input.disabled = false;
+                    submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i data-lucide="sparkles" class="w-5 h-5"></i>';
                     lucide.createIcons();
-                    submitBtn.disabled = false;
-                    
-                    // גלילה קלה למעלה כדי לראות את התוצאות
+                    input.focus();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             }
         }
+
+        function updateUsageCount() {
+            state.usageCount++;
+            localStorage.setItem('pollinationsUsageCount', state.usageCount.toString());
+            usageCountDisplay.innerText = state.usageCount;
+        }
+
+        // Run setup
+        init();
+
     </script>
 </body>
 </html>
