@@ -772,11 +772,10 @@
                 const item = imageCards[i];
                 console.log(`\n▶️ [${i+1}/${MODELS.length}] Starting processing for model: ${item.model.name} (${item.model.id})`);
                 
-                // 1. קודם כל בונים את הקישור הבסיסי והנקי
-                let baseUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${item.model.id}&width=1024&height=1024&nologo=true&seed=${seed}`;
+                // --- התיקון הקריטי: מעבר לדומיין החדש של Pollinations (gen) והוספת .jpg ---
+                let baseUrl = `https://gen.pollinations.ai/image/${encodedPrompt}.jpg?model=${item.model.id}&width=1024&height=1024&nologo=true&seed=${seed}`;
                 
                 // 2. בדיקה בטוחה: רק אם יש מפתח סודי תקין, נוסיף אותו לקישור!
-                // השתמשנו ב-encodeURIComponent כדי להבטיח שאין תווים ששוברים את הקישור
                 if (state.apiKey && state.apiKey.trim() !== "") {
                     const safeKey = encodeURIComponent(state.apiKey.trim());
                     baseUrl += `&key=${safeKey}`;
