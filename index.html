@@ -759,7 +759,9 @@
             // 2. תהליך היצירה וההמתנה - מודל אחרי מודל
             for (let i = 0; i < imageCards.length; i++) {
                 const item = imageCards[i];
-                const baseUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${item.model.id}&width=1024&height=1024&nologo=true&seed=${seed}`;
+                
+                // הקישור השלם, כשהמפתח מצורף ממש בסוף הכתובת:
+                const baseUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${item.model.id}&width=1024&height=1024&nologo=true&seed=${seed}&key=${state.apiKey}`;
                 
                 const statusText = document.getElementById(`status-${item.model.id}`);
                 const spinner = document.getElementById(`spinner-${item.model.id}`);
