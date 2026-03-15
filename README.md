@@ -1,30 +1,8 @@
-Pollinations.ai Daily Model Tester 🚀
+🎨 AI Models Laboratory (Pollinations Gallery)A high-performance, fully responsive web application that generates images from a single text prompt across 9 different state-of-the-art AI models simultaneously.Built to demonstrate advanced API handling, sequential asynchronous loading, and rate-limit bypassing.✨ FeaturesMulti-Model Generation: See how 9 different models (Flux, Imagen, Grok, etc.) interpret the exact same prompt.Smart Queue System: Implements a sequential async/await loading mechanism with built-in cooldowns (4s success / 10s error) to prevent "Queue Full" errors and handle rate limits gracefully.Pro-Tier Authentication: Securely sends your Pollinations API key via Authorization: Bearer headers (falling back to URL parameters if CORS restricts it).Cloud Sync (Firebase): Saves your API key, generated image count, and prompt history securely to Firestore.Beautiful UI: Glassmorphism design, fully responsive, with Dark/Light mode and full RTL (Hebrew) / LTR (English) support.🚀 Models IncludedFlux Schnell (flux)FLUX.2 Dev (flux-2-dev)Dirtberry (dirtberry)Z-Image Turbo (zimage)Imagen 4 (imagen-4)Grok Imagine (grok-imagine)FLUX.2 Klein 4B (klein)GPT Image 1 Mini (gptimage)FLUX.2 Klein 9B (klein-large)🛠️ Tech StackFrontend: HTML5, JavaScript, Tailwind CSS (via CDN).Icons: Lucide Icons.Backend / Database: Firebase Authentication & Firestore.Image Generation: gen.pollinations.ai API.📦 How to RunOption 1: Live Web App (Lovable / Vercel / GitHub Pages)Simply host the code on any static hosting provider. The app runs entirely in the browser. You will need to click the "Login" button and provide your pollinations.ai API key to generate images without restrictions.Option 2: Local Python Testing ScriptThis repository includes a test_models.py script to test the Pollinations API directly from your terminal.Install requirements:pip install requests
+Set your API Key as an environment variable:# On Mac/Linux
+export POLLINATIONS_API_KEY="sk_your_secret_key"
 
-An automated testing suite for evaluating different AI image generation models provided by Pollinations.ai.
-
-📌 Overview
-
-This repository contains a Python script that systematically tests various text-to-image models (like Flux, Google Imagen 4, and FLUX.2 Klein).
-It utilizes GitHub Actions to run automatically every day, ensuring the models are generating outputs correctly.
-
-⚙️ How it Works
-
-1.A GitHub Actions workflow runs daily (cron job).
-
-2.The Python script securely fetches the POLLINATIONS_API_KEY from GitHub Secrets.
-
-3.It sends a complex test prompt to multiple models.
-
-4.The generated images are saved as artifacts, and a daily log is updated automatically.
-
-🛡️ Security
-
-The API keys are never hardcoded. The project uses Environment Variables and GitHub Repository Secrets to protect user Pollen from unauthorized usage.
-
-🤖 Tested Models
-
-* Flux Schnell (flux)
-* Z-Image Turbo (zimage)
-* Google Imagen 4 Alpha (imagen-4)
-* FLUX.2 Klein 4B & 9B (klein, klein-large)
-* GPT Image 1 Mini (gptimage)
+# On Windows (CMD)
+set POLLINATIONS_API_KEY="sk_your_secret_key"
+Run the script:python test_models.py
+The script will generate images sequentially and save them to your local folder.⚠️ Important Note for AI Builders (Lovable, v0, etc.)If you are importing this project into an AI builder, please refer to ai_project_spec.md for the strict implementation logic regarding Sequential Loading and Cooldowns. Firing 9 models simultaneously will result in 429 Too Many Requests errors.📜 LicenseThis project is licensed under the MIT License.
