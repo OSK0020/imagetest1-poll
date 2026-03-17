@@ -97,9 +97,9 @@
                 </button>
                 <div id="help-box" class="hidden my-3 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-sm text-blue-800 dark:text-blue-200 border border-blue-100 dark:border-blue-800/50">
                     <ol class="list-decimal list-inside space-y-2" data-i18n="helpText">
-                        <li>כנסו לאתר pollinations.ai</li>
-                        <li>התחברו עם חשבון</li>
-                        <li>עברו להגדרות והעתיקו את המפתח הסודי</li>
+                        <li>כנסו לאתר <a href="https://enter.pollinations.ai" target="_blank" class="underline font-bold">enter.pollinations.ai</a></li>
+                        <li>התחברו באמצעות חשבון (לדוגמה: GitHub)</li>
+                        <li>עברו לדף ניהול המפתחות והפיקו מפתח סודי (Secret Key המתחיל ב-sk_)</li>
                     </ol>
                 </div>
             </div>
@@ -109,6 +109,13 @@
                 <i data-lucide="arrow-left" class="w-5 h-5 inline-block mr-2 rtl-flip"></i>
             </button>
         </div>
+    </div>
+
+    <!-- Verification Overlay -->
+    <div id="verification-overlay" class="fixed inset-0 z-[110] bg-gray-950/80 backdrop-blur-md flex flex-col items-center justify-center hidden">
+        <div class="loader mb-4"></div>
+        <p class="text-white text-xl font-bold animate-pulse" data-i18n="verifyingKey">Verifying Key...</p>
+        <p class="text-gray-400 text-sm mt-2" data-i18n="pleaseWait">Please wait while we connect to Pollinations.ai</p>
     </div>
 
     <!-- Top Navbar -->
@@ -426,7 +433,11 @@
                 helpText: "<li>כנסו לאתר pollinations.ai</li><li>התחברו עם חשבון</li><li>עברו להגדרות והעתיקו את המפתח</li>",
                 startApp: "התחל ליצור",
                 openGallery: "הגלריה האישית שלי",
-                backToGen: "חזרה למחולל"
+                backToGen: "חזרה למחולל",
+                verifyingKey: "מאמת מפתח...",
+                pleaseWait: "אנא המתן בזמן שאנו מתחברים ל-Pollinations.ai",
+                localFileWarning: "שים לב: אימות מפתח מלא מוגבל בהרצה מקובץ מקומי. מוודא פורמט המפתח...",
+                invalidFormat: "פורמט המפתח אינו תקין. עליו להתחיל ב-sk_ ולהיות באורך מתאים."
             },
             en: {
                 logoTitle: "AI Lab",
@@ -449,10 +460,14 @@
                 welcomeTitle: "Welcome",
                 welcomeSub: "Sign in to save your creations to the cloud.",
                 howToGetSecret: "How to get a secret key?",
-                helpText: "<li>Go to pollinations.ai</li><li>Sign in to your account</li><li>Go to Settings and copy the Key</li>",
+                helpText: "<li>Go to <a href='https://enter.pollinations.ai' target='_blank' class='underline'>enter.pollinations.ai</a></li><li>Sign in to your account</li><li>Go to API Management and copy the Secret Key (sk_)</li>",
                 startApp: "Start Creating",
                 openGallery: "Dedicated Gallery View",
-                backToGen: "Back to Generator"
+                backToGen: "Back to Generator",
+                verifyingKey: "Verifying Key...",
+                pleaseWait: "Please wait while we connect to Pollinations.ai",
+                localFileWarning: "Note: Full verification is limited when running from a local file. Validating format...",
+                invalidFormat: "Invalid key format. It should start with sk_ and be of sufficient length."
             }
         };
 
@@ -526,6 +541,8 @@
         const generationControls = document.getElementById('generation-controls');
         const etaIndicator = document.getElementById('eta-indicator');
         const cancelBtn = document.getElementById('cancel-btn');
+        
+        const verificationOverlay = document.getElementById('verification-overlay');
         
         let currentAbortController = null;
         let isGenerating = false;
@@ -722,34 +739,83 @@
         splashStartBtn.addEventListener('click', async () => {
             const key = splashApiKey.value.trim();
             if (key) {
-                splashStartBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i>';
-                lucide.createIcons();
+                // Basic format check first
+                if (!key.startsWith('sk_') || key.length < 20) {
+                    showToast(translations[state.lang].invalidFormat, "error");
+                    return;
+                }
+
+                // Show Verification Overlay
+                verificationOverlay.classList.remove('hidden');
+                splashStartBtn.disabled = true;
+                
+                const startTime = Date.now();
+                const isLocalFile = window.location.protocol === 'file:';
                 
                 try {
-                    // עדכון הדומיין לבדיקת הוולידציה הכללית שלא תחסם או שימוש בסאב-רואטינה קיימת
-                    const response = await fetch(`https://image.pollinations.ai/prompt/test?width=64&height=64`, {
+                    // Actual verification call to Pollinations.ai
+                    const response = await fetch(`https://image.pollinations.ai/models`, {
                         method: 'GET',
-                        // לצרכי ולידציה שקטה, אנו מוסיפים את המפתח ב-QS אם ה-header נחסם.
-                        // ה-fetch הבא ייכשל ב-CORS ללא ספק אם זה image.pollinations, אבל אולי לא עם text.
+                        headers: {
+                            'Authorization': `Bearer ${key}`
+                        }
                     });
                     
-                    // בגלל שפולינשן לעיתים מחזירה CORS בבדיקה, נקבל מפתח כל עוד הוא מעל 8 תווים
-                    if (key.length < 8) throw new Error("Key too short");
-                    
-                    state.apiKey = key;
-                    localStorage.setItem('pollinationsApiKey', key);
-                    updateProfileUI();
-                    syncToCloud(); 
-                    showToast(state.lang === 'he' ? "התחברת בהצלחה" : "Validated successfully!", "success");
-                    
-                    splashScreen.classList.add('opacity-0', 'pointer-events-none');
-                    setTimeout(() => splashScreen.classList.add('hidden'), 500);
+                    const duration = Date.now() - startTime;
+                    const minWait = 1500; // Premium feel: wait at least 1.5s
+                    const remainingWait = Math.max(0, minWait - duration);
+
+                    if (response.status === 200 || response.status === 304) {
+                        setTimeout(() => completeLogin(key), remainingWait);
+                    } else if (response.status === 401 || response.status === 403) {
+                        throw new Error("Invalid Key");
+                    } else {
+                        // Fallback for other status codes if we are in local file
+                        if (isLocalFile) {
+                            console.warn("Server returned status", response.status, "but origin is null. Proceeding with caution.");
+                            setTimeout(() => completeLogin(key), remainingWait);
+                        } else {
+                            throw new Error("Connection Error");
+                        }
+                    }
                 } catch (e) {
-                    showToast(state.lang === 'he' ? "מפתח שגוי או החיבור נכשל." : "Invalid API Key or connection timeout.", "error");
-                    splashStartBtn.innerHTML = state.lang === 'he' ? "התחל ליצור" : "Start Creating";
+                    console.error("Verification failed:", e);
+                    
+                    const duration = Date.now() - startTime;
+                    const minWait = 1000;
+                    const remainingWait = Math.max(0, minWait - duration);
+
+                    setTimeout(() => {
+                        // Specific handling for CORS/Local File issues
+                        if (isLocalFile) {
+                            console.log("CORS block detected on local file. Validating via format as fallback.");
+                            showToast(translations[state.lang].localFileWarning, "info");
+                            // We give them another 1.2s to see the warning then proceed
+                            setTimeout(() => completeLogin(key), 1200);
+                        } else {
+                            showToast(state.lang === 'he' ? "מפתח שגוי או החיבור נכשל. אנא וודאו שהמפתח תקין." : "Invalid API Key or connection failed. Please ensure the key is active.", "error");
+                            verificationOverlay.classList.add('hidden');
+                            splashStartBtn.disabled = false;
+                        }
+                    }, remainingWait);
                 }
             }
         });
+
+        function completeLogin(key) {
+            state.apiKey = key;
+            localStorage.setItem('pollinationsApiKey', key);
+            updateProfileUI();
+            syncToCloud(); 
+            showToast(state.lang === 'he' ? "התחברת בהצלחה" : "Connected successfully!", "success");
+            
+            splashScreen.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                splashScreen.classList.add('hidden');
+                verificationOverlay.classList.add('hidden');
+                lucide.createIcons();
+            }, 500);
+        }
 
         splashLoginBtn.addEventListener('click', async () => {
             try {
