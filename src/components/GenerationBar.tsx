@@ -2,43 +2,43 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, Zap, SlidersHorizontal, Settings2, Square } from 'lucide-react';
+import { Sparkles, Send, Zap, SlidersHorizontal, Settings2, Square, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { translations, Language } from '@/lib/translations';
+import { MODELS, getIcon } from '@/lib/models';
 
 interface GenerationBarProps {
   onGenerate: (prompt: string, model: string) => void;
   onStop?: () => void;
   isGenerating: boolean;
   language: Language;
+  selectedModelId: string;
+  onModelChange: (id: string) => void;
 }
 
-const MODELS = [
-  { id: 'all', name: 'All Models (Sequential)', icon: <Sparkles className="w-3 h-3" /> },
-  { id: 'flux', name: 'Flux Schnell', icon: <Zap className="w-3 h-3" /> },
-  { id: 'flux-2-dev', name: 'FLUX.2 Dev', icon: <Sparkles className="w-3 h-3" /> },
-  { id: 'dirtberry', name: 'Dirtberry', icon: <Settings2 className="w-3 h-3" /> },
-  { id: 'zimage', name: 'Z-Image Turbo', icon: <Zap className="w-3 h-3" /> },
-  { id: 'imagen-4', name: 'Imagen 4', icon: <Settings2 className="w-3 h-3" /> },
-  { id: 'grok-imagine', name: 'Grok Imagine', icon: <Sparkles className="w-3 h-3" /> },
-  { id: 'klein', name: 'FLUX.2 Klein 4B', icon: <Zap className="w-3 h-3" /> },
-  { id: 'gptimage', name: 'GPT Image 1 Mini', icon: <Sparkles className="w-3 h-3" /> },
-  { id: 'klein-large', name: 'FLUX.2 Klein 9B', icon: <Zap className="w-3 h-3" /> }
-];
-
-export default function GenerationBar({ onGenerate, onStop, isGenerating, language }: GenerationBarProps) {
+export default function GenerationBar({ onGenerate, onStop, isGenerating, language, selectedModelId, onModelChange }: GenerationBarProps) {
   const t = translations[language];
   const [prompt, setPrompt] = useState('');
-  const [selectedModel, setSelectedModel] = useState(MODELS[0]);
   const [showModels, setShowModels] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const selectedModel = MODELS.find(m => m.id === selectedModelId) || MODELS[0];
 
   return (
     <div className="fixed bottom-12 left-1/2 -translate-x-1/2 w-full max-w-4xl px-6 z-50">
       <motion.div
         initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        animate={{ 
+          y: 0, 
+          opacity: 1,
+          scale: isFocused ? 1.02 : 1
+        }}
         transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-        className="relative flex items-center gap-3 p-3 bg-white/90 dark:bg-[#1A1A1A]/80 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        className={cn(
+          "relative flex items-center gap-3 p-3 bg-white/90 dark:bg-[#1A1A1A]/80 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500",
+          !prompt.trim() && !isGenerating && "animate-glow border-purple-500/30",
+          isFocused && "border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+        )}
         dir={language === 'he' ? 'rtl' : 'ltr'}
       >
         {/* Model Selector */}
@@ -47,13 +47,12 @@ export default function GenerationBar({ onGenerate, onStop, isGenerating, langua
             onClick={() => setShowModels(!showModels)}
             className="flex items-center gap-3 px-6 py-4 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-slate-900 dark:text-white text-[13px] font-bold transition-all border border-slate-200 dark:border-white/10 min-h-[48px]"
           >
-            {selectedModel.icon}
+            {React.createElement(getIcon(selectedModel.iconName), { className: "w-3 h-3" })}
             <span className="hidden md:inline">{selectedModel.id === 'all' ? (language === 'he' ? 'כל המודלים' : 'All Models') : selectedModel.name}</span>
             <span className="md:hidden">Model</span>
             <SlidersHorizontal className={cn("w-4 h-4 opacity-50", language === 'he' ? "mr-1" : "ml-1")} />
           </button>
-
-          <AnimatePresence>
+<AnimatePresence>
             {showModels && (
               <motion.div
                 initial={{ opacity: 0, y: -20, scale: 0.9 }}
@@ -65,7 +64,7 @@ export default function GenerationBar({ onGenerate, onStop, isGenerating, langua
                   <button
                     key={model.id}
                     onClick={() => {
-                      setSelectedModel(model);
+                      onModelChange(model.id);
                       setShowModels(false);
                     }}
                     className={cn(
@@ -73,7 +72,7 @@ export default function GenerationBar({ onGenerate, onStop, isGenerating, langua
                       selectedModel.id === model.id ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "hover:bg-slate-100 dark:hover:bg-white/5"
                     )}
                   >
-                    {model.icon}
+                    {React.createElement(getIcon(model.iconName), { className: "w-3 h-3" })}
                     {model.id === 'all' ? (language === 'he' ? 'כל המודלים' : 'All Models') : model.name}
                   </button>
                 ))}
@@ -88,6 +87,8 @@ export default function GenerationBar({ onGenerate, onStop, isGenerating, langua
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             onKeyDown={(e) => e.key === 'Enter' && !isGenerating && onGenerate(prompt, selectedModel.id)}
             placeholder={t.placeholder}
             className={cn(
@@ -120,11 +121,11 @@ export default function GenerationBar({ onGenerate, onStop, isGenerating, langua
           >
             {isGenerating ? (
               <div className="flex items-center gap-3 px-2">
-                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                 <Loader2 className="w-5 h-5 text-white animate-spin" />
                  <span className="text-xs font-bold text-white hidden md:inline">{t.generating}</span>
               </div>
             ) : (
-                            <Send className={cn(
+                <Send className={cn(
                 "w-6 h-6 transition-transform duration-500", 
                 prompt.trim() && !isGenerating && (language === 'he' ? "group-hover:-translate-x-1 group-hover:-translate-y-1" : "group-hover:translate-x-1 group-hover:-translate-y-1")
               )} />

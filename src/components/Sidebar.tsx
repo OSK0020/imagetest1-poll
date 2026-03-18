@@ -18,7 +18,9 @@ import {
   Edit3,
   Check,
   Lock,
-  Loader2
+  Loader2,
+  Trash2,
+  UserX
 } from 'lucide-react';
 import { useAuth } from './AuthProvider';
 import { KeyAnalysis, ImageItem } from '@/hooks/usePollinations';
@@ -35,6 +37,8 @@ interface SidebarProps {
   onViewArchive: () => void;
   language: Language;
   onApiKeyChange: (key: string) => Promise<boolean>;
+  onClearHistory?: () => Promise<void>;
+  onDeleteAccount?: () => Promise<void>;
   side?: 'left' | 'right';
 }
 
@@ -48,6 +52,8 @@ export default function Sidebar({
   onViewArchive,
   language,
   onApiKeyChange,
+  onClearHistory,
+  onDeleteAccount,
   side = 'right'
 }: SidebarProps) {
   const { user, logout, signIn } = useAuth();
@@ -58,6 +64,18 @@ export default function Sidebar({
   const [newKey, setNewKey] = React.useState('');
   const [isSaving, setIsSaving] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
+
+  const handleClearHistory = async () => {
+    if (window.confirm(language === 'he' ? 'האם אתה בטוח שברצונך למחוק את כל ההיסטוריה?' : 'Are you sure you want to clear all history?')) {
+      await onClearHistory?.();
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+     if (window.confirm(language === 'he' ? 'אזהרה חמורה: מחיקת החשבון תסיר את כל המידע שלך לצמיתות. האם להמשיך?' : 'CRITICAL WARNING: Deleting your account will remove all your data permanently. Continue?')) {
+       await onDeleteAccount?.();
+     }
+  };
 
   const handleSaveKey = async () => {
     if (!showConfirm && apiKey) {
@@ -310,15 +328,34 @@ export default function Sidebar({
               </div>
 
               {/* Footer */}
-              <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-transparent">
+              <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-transparent space-y-3">
                 {user && (
-                  <button 
-                    onClick={logout}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-2xl font-bold transition-all text-sm mb-4 border border-red-500/10"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    {t.signOut}
-                  </button>
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                       <button 
+                         onClick={handleClearHistory}
+                         className="flex items-center justify-center gap-2 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 rounded-xl font-bold transition-all text-[10px] border border-slate-200 dark:border-white/5"
+                       >
+                         <Trash2 className="w-3.5 h-3.5" />
+                         {language === 'he' ? 'נקה היסטוריה' : 'Clear History'}
+                       </button>
+                       <button 
+                         onClick={handleDeleteAccount}
+                         className="flex items-center justify-center gap-2 py-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-xl font-bold transition-all text-[10px] border border-red-500/10"
+                       >
+                         <UserX className="w-3.5 h-3.5" />
+                         {language === 'he' ? 'מחק חשבון' : 'Delete Account'}
+                       </button>
+                    </div>
+                    
+                    <button 
+                      onClick={logout}
+                      className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-2xl font-bold transition-all text-sm mb-1 border border-red-500/10"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t.signOut}
+                    </button>
+                  </>
                 )}
                 <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
                   {t.version}

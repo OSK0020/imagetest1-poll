@@ -15,12 +15,16 @@ interface ImageItem {
 interface BentoGalleryProps {
   images: ImageItem[];
   onOpenImage: (url: string) => void;
+  isUniform?: boolean;
 }
 
-export default function BentoGallery({ images, onOpenImage }: BentoGalleryProps) {
+export default function BentoGallery({ images, onOpenImage, isUniform = false }: BentoGalleryProps) {
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 auto-rows-[300px]">
+    <div className={cn("max-w-7xl mx-auto px-6 py-12", isUniform && "max-w-full")}>
+      <div className={cn(
+        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-[300px]",
+        isUniform && "lg:grid-cols-3 xl:grid-cols-3" // Adjust for All Models view
+      )}>
         <AnimatePresence mode="popLayout">
           {images.map((img, index) => (
             <motion.div
@@ -36,8 +40,8 @@ export default function BentoGallery({ images, onOpenImage }: BentoGalleryProps)
               }}
               className={cn(
                 "group relative overflow-hidden rounded-[2rem] border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-white/5 backdrop-blur-sm cursor-pointer",
-                index % 5 === 0 ? "md:col-span-2 md:row-span-2" : "",
-                index % 7 === 0 ? "md:row-span-2" : ""
+                !isUniform && index % 5 === 0 ? "md:col-span-2 md:row-span-2" : "",
+                !isUniform && index % 7 === 0 ? "md:row-span-2" : ""
               )}
               onClick={() => onOpenImage(img.url)}
             >

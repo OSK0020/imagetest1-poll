@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@100..900&family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@100..900&family=Outfit:wght@100..900&family=Rubik:wght@300..900&display=swap');
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -23,7 +23,11 @@
   }
 
   [dir="rtl"] {
-    font-family: 'Heebo', sans-serif;
+    font-family: 'Heebo', 'Rubik', sans-serif;
+  }
+
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 {
+    font-family: 'Rubik', sans-serif;
   }
 
   /* Reset inputs and buttons which were showing up white in some browser views */
@@ -48,6 +52,16 @@
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
+}
+
+@keyframes glow-pulse {
+  0% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.2), 0 0 5px rgba(59, 130, 246, 0.1); }
+  50% { box-shadow: 0 0 35px rgba(139, 92, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.3); }
+  100% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.2), 0 0 5px rgba(59, 130, 246, 0.1); }
+}
+
+.animate-glow {
+  animation: glow-pulse 4s infinite ease-in-out;
 }
 
 /* Custom Scrollbar */

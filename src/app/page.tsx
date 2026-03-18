@@ -13,6 +13,55 @@ import { useTheme } from '@/components/ThemeProvider';
 import { LogOut, Maximize2, X, Aperture, Sun, Moon, Menu, User as UserIcon, Loader2, Globe, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { translations, Language } from '@/lib/translations';
+import { MODELS } from '@/lib/models';
+
+const Hero = ({ language, selectedModelId, onSelectModel }: { language: Language, selectedModelId: string, onSelectModel: (id: string) => void }) => {
+  const t = translations[language];
+  return (
+    <div className="flex flex-col items-center justify-center text-center space-y-8 py-20 px-6 mt-12 mb-8">
+       <motion.h1 
+         initial={{ opacity: 0, scale: 0.9 }}
+         animate={{ opacity: 1, scale: 1 }}
+         className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter uppercase leading-none"
+       >
+          <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
+            {language === 'en' ? 'AI Models Laboratory' : 'מעבדת מודלי AI'}
+          </span>
+       </motion.h1>
+       
+       <motion.p
+         initial={{ opacity: 0, y: 10 }}
+         animate={{ opacity: 1, y: 0 }}
+         transition={{ delay: 0.2 }}
+         className="text-slate-500 dark:text-gray-400 max-w-2xl text-lg font-medium"
+       >
+         {language === 'en' 
+           ? "Enter a description below and see in real-time how the world's leading AI models interpret it."
+           : "הכניסו תיאור למטה וראו בזמן אמת כיצד מודלי ה-AI המובילים בעולם מפרשים אותו."}
+       </motion.p>
+       
+       <div className="flex flex-wrap justify-center gap-2.5 max-w-4xl pt-4">
+         {MODELS.filter(m => m.id !== 'all').map((model, idx) => (
+            <motion.button
+              key={model.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 + (idx * 0.05) }}
+              onClick={() => onSelectModel(model.id)}
+              className={cn(
+                "px-5 py-2.5 rounded-full border transition-all text-[13px] font-bold",
+                selectedModelId === model.id 
+                  ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/25" 
+                  : "border-slate-200 dark:border-white/10 bg-white/5 hover:bg-white/10 dark:hover:bg-white/10 text-slate-600 dark:text-gray-400"
+              )}
+            >
+              {model.name}
+            </motion.button>
+         ))}
+       </div>
+    </div>
+  );
+};
 
 export default function Home() {
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -28,6 +77,9 @@ export default function Home() {
   const { user, signIn, logout: firebaseLogout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   
+  const [recentModel, setRecentModel] = useState<string>('all');
+  const [selectedModelId, setSelectedModelId] = useState(MODELS[0].id);
+
   const { 
     images, 
     history,
@@ -37,8 +89,14 @@ export default function Home() {
     generateImage, 
     verifyKey, 
     fetchHistory,
-    stopGeneration
+    stopGeneration,
+    clearHistory
   } = usePollinations(apiKey, user?.uid || null);
+
+  const onGenerate = (p: string, m: string) => {
+    setRecentModel(m);
+    generateImage(p, m);
+  };
 
   // Load API key
   useEffect(() => {
@@ -70,6 +128,19 @@ export default function Home() {
     setApiKey(null);
     localStorage.removeItem('pollinations_api_key');
     firebaseLogout();
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    try {
+      await clearHistory();
+      await user.delete();
+      handleLogout();
+    } catch (err) {
+      console.error("Delete account error:", err);
+      // Fallback: just logout if delete fails due to re-auth requirement
+      handleLogout();
+    }
   };
 
   const toggleLanguage = () => {
@@ -124,7 +195,11 @@ export default function Home() {
                     </div>
                   </div>
                   <h1 className="text-xl font-black tracking-tighter uppercase hidden sm:block">
-                    {t.title}
+                    {language === 'en' ? (
+                      <>AI Models <span className="text-purple-500">Laboratory</span></>
+                    ) : (
+                      <><span className="text-purple-500">AI</span> מעבדת מודלי</>
+                    )}
                     {view === 'archive' && <span className={cn(
                       "text-xs opacity-50 font-medium bg-white/10 px-2 py-1 rounded-lg",
                       language === 'he' ? "mr-3" : "ml-3"
@@ -216,18 +291,32 @@ export default function Home() {
               )}
             </AnimatePresence>
 
-            {/* Main Content */}
-            <BentoGallery images={view === 'generator' ? images : history} onOpenImage={setSelectedImage} />
-            
-            {/* Bottom Input Area */}
-            {view === 'generator' && (
-              <GenerationBar 
-                onGenerate={generateImage} 
-                onStop={stopGeneration}
-                isGenerating={isGenerating} 
-                language={language} 
-              />
-            )}
+             {/* Main Content */}
+             {view === 'generator' && images.length === 0 && (
+               <Hero 
+                 language={language} 
+                 selectedModelId={selectedModelId} 
+                 onSelectModel={setSelectedModelId} 
+               />
+             )}
+             
+             <BentoGallery 
+               images={view === 'generator' ? images : history} 
+               onOpenImage={setSelectedImage} 
+               isUniform={recentModel === 'all' && view === 'generator'}
+             />
+             
+             {/* Bottom Input Area */}
+             {view === 'generator' && (
+               <GenerationBar 
+                 onGenerate={onGenerate} 
+                 onStop={stopGeneration}
+                 isGenerating={isGenerating} 
+                 language={language} 
+                 selectedModelId={selectedModelId}
+                 onModelChange={setSelectedModelId}
+               />
+             )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -242,6 +331,8 @@ export default function Home() {
         onViewArchive={() => setView('archive')}
         language={language}
         onApiKeyChange={handleConnect}
+        onClearHistory={clearHistory}
+        onDeleteAccount={handleDeleteAccount}
         side={language === 'he' ? 'right' : 'left'}
       />
 

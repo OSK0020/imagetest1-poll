@@ -122,6 +122,24 @@ export function usePollinations(apiKey: string | null, uid: string | null) {
     abortControllerRef.current = null;
   };
 
+  const clearHistory = async () => {
+    if (!uid) return;
+    try {
+      // In a real app, you'd use a cloud function or batch, 
+      // but for this small prototype we'll fetch then delete or just truncate.
+      const q = query(collection(db, 'users', uid, 'history'));
+      const querySnapshot = await getDocs(q);
+      const deletePromises = querySnapshot.docs.map(d => setDoc(doc(db, 'users', uid, 'history', d.id), {}, { merge: false })); // This is a bit hacky, normally deleteDoc
+      // Better:
+      const { deleteDoc } = await import('firebase/firestore');
+      const realP = querySnapshot.docs.map(d => deleteDoc(doc(db, 'users', uid, 'history', d.id)));
+      await Promise.all(realP);
+      setHistory([]);
+    } catch (err) {
+      console.error("Clear history error:", err);
+    }
+  };
+
   const stopGeneration = () => {
     stopRef.current = true;
     queueRef.current = [];
@@ -133,10 +151,9 @@ export function usePollinations(apiKey: string | null, uid: string | null) {
 
   const addToQueue = async (prompt: string, model: string) => {
     if (model === 'all') {
-      // For "All Models", we'll run them concurrently as requested
-      // but we still want to save to history.
-      setIsGenerating(true);
       stopRef.current = false;
+      setIsGenerating(true);
+      setImages([]); // Clear screen for new gallery as requested
       abortControllerRef.current = new AbortController();
       
       const englishPrompt = await translatePrompt(prompt);
@@ -145,10 +162,6 @@ export function usePollinations(apiKey: string | null, uid: string | null) {
         if (stopRef.current) return;
         
         try {
-          // Note: Browser images don't easily support AbortController for <img> src,
-          // but if we were fetching them we could cancel. 
-          // For now, this mostly stops the translation and queue.
-          
           const id = Date.now().toString() + m;
           const seed = Math.floor(Math.random() * 1000000);
           const url = `https://pollinations.ai/p/${encodeURIComponent(englishPrompt)}?width=1024&height=1024&seed=${seed}&model=${m}&nologo=true`;
@@ -161,7 +174,7 @@ export function usePollinations(apiKey: string | null, uid: string | null) {
             timestamp: Date.now()
           };
 
-          setImages(prev => [newImage, ...prev]);
+          setImages(prev => [...prev, newImage]); // Append for concurrent view
           setHistory(prev => [newImage, ...prev].slice(0, 50));
           saveToFirestore(newImage);
         } catch (err) {
@@ -253,6 +266,7 @@ export function usePollinations(apiKey: string | null, uid: string | null) {
     generateImage: addToQueue,
     verifyKey: verifyAndAnalyzeKey,
     fetchHistory,
-    stopGeneration
+    stopGeneration,
+    clearHistory
   };
 }
