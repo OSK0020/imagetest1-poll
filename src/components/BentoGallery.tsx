@@ -84,9 +84,8 @@ export default function BentoGallery({ images, onOpenImage, isUniform = false }:
         </AnimatePresence>
 
         {images.length === 0 && (
-          <div className="col-span-full h-96 flex flex-col items-center justify-center text-slate-400 dark:text-gray-400 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[3rem]">
-            <Search className="w-12 h-12 mb-4 opacity-20" />
-            <p className="text-xl font-medium opacity-50">Enter a prompt to see the magic happen.</p>
+          <div className="col-span-full h-96 flex flex-col items-center justify-center text-slate-400 dark:text-gray-400 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[3rem] opacity-20">
+            <Search className="w-12 h-12" />
           </div>
         )}
       </div>

@@ -123,7 +123,11 @@ export function usePollinations(apiKey: string | null, uid: string | null) {
   };
 
   const clearHistory = async () => {
-    if (!uid) return;
+    if (!uid) {
+      setImages([]);
+      setHistory([]);
+      return;
+    }
     try {
       // In a real app, you'd use a cloud function or batch, 
       // but for this small prototype we'll fetch then delete or just truncate.

@@ -60,6 +60,25 @@
   100% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.2), 0 0 5px rgba(59, 130, 246, 0.1); }
 }
 
+@keyframes google-colors {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.google-btn-live {
+  background: linear-gradient(
+    -45deg, 
+    #4285F4, 
+    #EA4335, 
+    #FBBC05, 
+    #34A853,
+    #4285f4
+  );
+  background-size: 300% 300%;
+  animation: google-colors 8s ease infinite;
+}
+
 .animate-glow {
   animation: glow-pulse 4s infinite ease-in-out;
 }

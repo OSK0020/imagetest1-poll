@@ -329,25 +329,28 @@ export default function Sidebar({
 
               {/* Footer */}
               <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-transparent space-y-3">
+                <div className={cn("grid gap-2", user ? "grid-cols-2" : "grid-cols-1")}>
+                   <button 
+                     onClick={handleClearHistory}
+                     className="flex items-center justify-center gap-2 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 rounded-xl font-bold transition-all text-[10px] border border-slate-200 dark:border-white/5"
+                   >
+                     <Trash2 className="w-3.5 h-3.5" />
+                     {user 
+                        ? (language === 'he' ? 'נקה היסטוריה' : 'Clear History')
+                        : (language === 'he' ? 'נקה זיכרון מקומי' : 'Clear Local Memory')}
+                   </button>
+                   {user && (
+                     <button 
+                       onClick={handleDeleteAccount}
+                       className="flex items-center justify-center gap-2 py-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-xl font-bold transition-all text-[10px] border border-red-500/10"
+                     >
+                       <UserX className="w-3.5 h-3.5" />
+                       {language === 'he' ? 'מחק חשבון' : 'Delete Account'}
+                     </button>
+                   )}
+                </div>
+                
                 {user && (
-                  <>
-                    <div className="grid grid-cols-2 gap-2">
-                       <button 
-                         onClick={handleClearHistory}
-                         className="flex items-center justify-center gap-2 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 rounded-xl font-bold transition-all text-[10px] border border-slate-200 dark:border-white/5"
-                       >
-                         <Trash2 className="w-3.5 h-3.5" />
-                         {language === 'he' ? 'נקה היסטוריה' : 'Clear History'}
-                       </button>
-                       <button 
-                         onClick={handleDeleteAccount}
-                         className="flex items-center justify-center gap-2 py-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-xl font-bold transition-all text-[10px] border border-red-500/10"
-                       >
-                         <UserX className="w-3.5 h-3.5" />
-                         {language === 'he' ? 'מחק חשבון' : 'Delete Account'}
-                       </button>
-                    </div>
-                    
                     <button 
                       onClick={logout}
                       className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-2xl font-bold transition-all text-sm mb-1 border border-red-500/10"
@@ -355,7 +358,6 @@ export default function Sidebar({
                       <LogOut className="w-4 h-4" />
                       {t.signOut}
                     </button>
-                  </>
                 )}
                 <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
                   {t.version}
