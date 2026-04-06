@@ -4,7 +4,6 @@
 > **This project is PROTECTED by OSK0020.**
 > The source code is provided for portfolio demonstration purposes only. Running this project on unauthorized domains or environments without the original author's permission is strictly prohibited.
 > 
-> **Official Site:** [iamge-lab-website.vercel.app](https://iamge-lab-website.vercel.app/)
 
 ### *The Ultimate Visionary Playground for AI Image Generation*
 🚀 >>> **[CLICK HERE TO ACCESS THE OFFICIAL LAB](https://iamge-lab-website.vercel.app/)** <<<
@@ -17,8 +16,6 @@
 
 ## 🚀 Key Highlights
 
-### 🌍 **Global-Ready: EN & HE**
-Full **RTL (Right-to-Left)** support for Hebrew, with a perfectly aligned UI that switches seamlessly. Hand-crafted typography ensures both languages look stunning.
 
 ### 🎭 **Multi-Model Orchestration**
 Switch between the world's most advanced models including **Flux Schnell**, **Grok Imagine**, **Imagen 4**, and many more. Compare interpretations in real-time or generate with all models sequentially.
