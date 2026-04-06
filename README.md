@@ -1,6 +1,13 @@
-# 🌌 AI Models Laboratory
+# 🌌 AI Models Laboratory (Protected Build)
+
+> [!IMPORTANT]
+> **This project is PROTECTED by OSK0020.**
+> The source code is provided for portfolio demonstration purposes only. Running this project on unauthorized domains or environments without the original author's permission is strictly prohibited.
+> 
+> **Official Site:** [iamge-lab-website.vercel.app](https://iamge-lab-website.vercel.app/)
+
 ### *The Ultimate Visionary Playground for AI Image Generation*
-🚀 >>> **[CLICK HERE TO ACCESS THE LAB](https://osk0020.github.io/imagetest1-poll/)** <<<
+🚀 >>> **[CLICK HERE TO ACCESS THE OFFICIAL LAB](https://iamge-lab-website.vercel.app/)** <<<
 ![AI Lab Banner](./banner.png)
 
 ## ✨ Overview
@@ -73,6 +80,8 @@ Designed for those who appreciate **Visual Excellence**. The UI isn't just a too
 ---
 
 ## 📜 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**PROPRIETARY & CONFIDENTIAL**
+Copyright © 2024-2026 OSK0020. All rights reserved. 
+Redistribution, reproduction, or use of this source code in any form is prohibited without express written permission.
 
-Developed with ❤️ .
+Developed with ❤️ by OSK0020.

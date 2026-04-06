@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description: "A mind-blowing AI image experience. Google Auth, Secure Cloud, and Gemini Translate Ready.",
 };
 
+import { Guard } from "@/components/Guard";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,10 +28,12 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AuthProvider>
-            <div className="fixed inset-0 pointer-events-none z-[999] opacity-[0.03] invert dark:invert-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-            <div className="relative min-h-screen flex flex-col pb-safe overflow-x-hidden">
-               {children}
-            </div>
+            <Guard>
+              <div className="fixed inset-0 pointer-events-none z-[999] opacity-[0.03] invert dark:invert-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+              <div className="relative min-h-screen flex flex-col pb-safe overflow-x-hidden">
+                 {children}
+              </div>
+            </Guard>
           </AuthProvider>
         </ThemeProvider>
       </body>

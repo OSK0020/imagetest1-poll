@@ -9,6 +9,15 @@ export async function POST(req: Request) {
     }
 
     const appKey = process.env.POLLINATIONS_APP_KEY;
+    const generationSecret = process.env.APP_GENERATION_SECRET;
+
+    // PROTECTION: This API only works if the secret is correctly set in the environment.
+    // GitHub downloads won't have this, effectively disabling the generation for outsiders.
+    if (!generationSecret) {
+      return NextResponse.json({ 
+        error: 'Unauthorized: Missing App Secret. This code is protected by OSK0020.' 
+      }, { status: 401 });
+    }
 
     // Use the official Pollinations endpoint for generating images
     // Note: BYOP usually requires specific headers and potentially a POST request

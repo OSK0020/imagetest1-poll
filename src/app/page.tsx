@@ -34,12 +34,15 @@ export default function Home() {
   return (
     <div style={{ fontFamily: 'Arial', background: '#f0f0f0', minHeight: '100vh', padding: '20px' }}>
 
-      <div style={{ background: '#ddd', border: '1px solid #aaa', padding: '10px', marginBottom: '16px' }}>
+      <div style={{ background: '#ddd', border: '1px solid #aaa', padding: '10px', marginBottom: '16px', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, padding: '2px 6px', background: '#333', color: '#fff', fontSize: '10px', fontWeight: 'bold' }}>
+          OFFICIAL OSK0020 BUILD
+        </div>
         <h1 style={{ fontSize: '18px', margin: 0 }}>
-          🖼 Image Generator / מחולל תמונות — Flux Model
+          🖼 Image Generator — <a href="https://iamge-lab-website.vercel.app/" style={{ color: 'inherit', textDecoration: 'none' }}>iamge-lab-website.vercel.app</a>
         </h1>
         <p style={{ fontSize: '11px', color: '#666', margin: '4px 0 0' }}>
-          v0.1.2-beta | Build 2024 | Status: running / פועל
+          v0.2.0-protected | Exclusive to OSK0020 | Status: running / פועל
         </p>
       </div>
 
